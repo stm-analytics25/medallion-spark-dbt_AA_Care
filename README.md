@@ -1,4 +1,7 @@
-Welcome to your new dbt project!
+Welcome to the medallion architecture that leverages Azure DataFactory , Spark within Databricks and the dbt project!
+
+<img width="865" height="411" alt="Screenshot 2025-07-31 203306_medallion" src="https://github.com/user-attachments/assets/2aea96d4-192f-423f-9169-35dcd8b3c0f9" />
+
 
 ### Using the starter project
 
