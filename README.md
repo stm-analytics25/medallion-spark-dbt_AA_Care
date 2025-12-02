@@ -5,9 +5,9 @@ Welcome to the medallion architecture that leverages Azure DataFactory , Spark w
 
 ### Using the starter project
 
-Try running the following commands:
-- dbt run
-- dbt test
+We leverage Ontology and create dbt project to match the Ontology.
+
+dbt integrates with databricks and we ultimately exposed our unity catalog.gold medallion to PowerBI and AI/ML use cases
 
 
 ### Resources:
