@@ -1,0 +1,5 @@
+﻿"class,property,datatype"
+"Membership,membership_number,string"
+"Beneficiary,date_of_birth,date"
+"Claim,claim_amount,decimal"
+"FinancialRecord,transaction_date,date"
