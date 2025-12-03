@@ -1,2 +1,2 @@
-member_id,beneficiary_id,auth_id,auth_status,auth_case_type,auth_description,start_date,end_date,standard_lenth_of_stay,provider_id,provider_type,provider_description,provider_name,hospital_group
-M001,B001,A001,approved,hospital_admission,maternity,2025-12-03,999-99,3,147900,57,private,medilcinic-pta,mediclinic
+member_id,beneficiary_id,auth_id,auth_status,auth_case_type,auth_description,start_date,end_date,standard_lenth_of_stay,provider_id,provider_type,provider_description,provider_name,hospital_group,treating_provider
+M001,B001,A001,approved,hospital_admission,maternity,2025-12-03,999-99,3,147900,57,private,medilcinic-pta,mediclinic,148900
