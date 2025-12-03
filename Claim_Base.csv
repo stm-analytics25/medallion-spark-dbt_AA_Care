@@ -1,1 +1,1 @@
-
+scheme,product_code,member_id,beneficiary_id,claim_id,claim_id_line,claim_payment_line,date_of_service,provider_id,provider_type,service_tarriff_code,diagnosis_code,charged_by_provider,paid_by_scheme,claims_status,benefit_category,hospital_auth_id
