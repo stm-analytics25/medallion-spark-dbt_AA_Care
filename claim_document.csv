@@ -1,5 +1,5 @@
-member_id,beneficiary_id,claim_id,claim_source,document_id,document_type,document_description
-M001,B002,paper,medication_script,d002,acute medication,
-M002,B003,online,radiology,dx002,ct scan,
+member_id,beneficiary_id,claim_id,claim_source,document_id,document_type,
+M001,B002,C001,paper,medication_script,d002,script_medication,
+M002,B003,C003,electronic,radiology,dx002,ct_scan,
 
 
