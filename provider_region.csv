@@ -1,1 +1,2 @@
-provider_id,region_id
+provider_id,region_id,postal_address,business_adsress
+
