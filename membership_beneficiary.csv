@@ -1,12 +1,13 @@
-membership_id,beneficiary_id,relationship_to_member,Eff_date,membership_card_id,beneficiary_card_id
-M1001,B2001,Principal,2025-01-10,47000123,00
-M1001,B2002,Spouse,2025-01-10,47200123,01
-M1001,B2003,Child,2025-01-10,47300123,
-M1002,B2004,Principal,2025-02-01,47400123,
-M1002,B2005,Child,2025-02-01,47500123,
-M1003,B2006,Principal,2025-03-15,47600123,
-M1003,B2007,Child,2025-03-15,47700123,
-M1004,B2008,Principal,2025-04-17,47700123,
-M1004,B2009,Spouse,2025-04-01,47700123,
-M1004,B2010,Child,2025-04-01,47700123,
+membership_id,beneficiary_id,relationship_to_member,Eff_date,membership_card_id,beneficiary_card_id,scheme,product,product_start_date,product_end_date,benefit_start_date,benefit_end_date,membership_status,personal_information,contact_details,
+
+M1001,0,Principal,2025-01-10,47000123,00
+M1001,1,Spouse,2025-01-10,47200123,01
+M1001,2,Child,2025-01-10,47300123,02
+M1002,0,Principal,2025-02-01,47400123,00
+M1002,1,Child,2025-02-01,47500123,01
+M1003,0,Principal,2025-03-15,47600123,00
+M1003,1,Child,2025-03-15,47700123,01
+M1004,0,Principal,2025-04-17,47700123,00
+M1004,1,Spouse,2025-04-01,47700123,01
+M1004,2,Child,2025-04-01,47700123,02
 
