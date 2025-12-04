@@ -1,5 +1,5 @@
 membership_id,beneficiary_id,relationship_to_member,product_start_date,product_end_date,benefit_start_date,benefit_end_date,membership_card_id,beneficiary_card_id,scheme,product,membership_status,personal_information,contact_details,member_waiting_period,waiting_period_reason,late_join_penalty,late_join_penalty_reason,Paypoint,suspend_start_date,suspend_end_date,suspend_reason,broker_id,broker_start_date,broker_end_date
-M1001,0,Principal,2025-01-10,47000123,00,,,,,
+M1001,0,Principal,2025-01-10,47000123,00,
 M1001,1,Spouse,2025-01-10,47200123,01
 M1001,2,Child,2025-01-10,47300123,02
 M1002,0,Principal,2025-02-01,47400123,00
