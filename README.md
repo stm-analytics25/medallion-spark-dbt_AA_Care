@@ -19,7 +19,7 @@ We leverage Ontology and create dbt project to match the Ontology.The below are 
 | Transactions                      | PaymentTransaction     | `fct_transactions`              |
 
 
-dbt integrates with databricks and we ultimately exposed our unity catalog.gold medallion to PowerBI and AI/ML use cases
+dbt integrates with databricks and we ultimately exposed our unity catalog.gold medallion to PowerBI and AI/ML use cases.The use cases will assist with health care coordination model.
 
 
 ### Resources:
