@@ -16,17 +16,58 @@
       background: #f4f6f8;
       margin: 0;
     }
+
     header {
       padding: 14px 24px;
       background: #002b45;
-      color: #fff;
+      color: #ffffff;
       font-size: 18px;
       font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+
+    header span {
+      font-size: 13px;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
+    #status {
+      padding: 8px 24px;
+      font-size: 13px;
+      background: #e9ecef;
+      color: #333;
+    }
+
     #network {
       width: 100%;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 110px);
       background: #ffffff;
+    }
+
+    .legend {
+      position: absolute;
+      top: 130px;
+      right: 20px;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      padding: 10px 12px;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .legend div {
+      margin-bottom: 6px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
     }
   </style>
 </head>
@@ -34,11 +75,26 @@
 
 <header>
   Healthcare Graph Knowledge – Executive View
+  <span>Interactive ontology & relationship exploration</span>
 </header>
+
+<div id="status">Loading graph data…</div>
 
 <div id="network"></div>
 
+<div class="legend">
+  <div><span class="dot" style="background:#6c757d"></span>Property</div>
+  <div><span class="dot" style="background:#0d6efd"></span>Membership</div>
+  <div><span class="dot" style="background:#198754"></span>Beneficiary</div>
+  <div><span class="dot" style="background:#dc3545"></span>Claim</div>
+  <div><span class="dot" style="background:#fd7e14"></span>Financial Record</div>
+  <div><span class="dot" style="background:#6610f2"></span>Provider</div>
+  <div><span class="dot" style="background:#20c997"></span>Document</div>
+</div>
+
 <script>
+  const statusEl = document.getElementById("status");
+
   const nodes = new vis.DataSet();
   const edges = new vis.DataSet();
 
@@ -57,19 +113,24 @@
       download: true,
       header: true,
       skipEmptyLines: true,
-      complete: callback
+      complete: callback,
+      error: function(err) {
+        alert("Failed to load " + file + ". Ensure the file exists at repo root.");
+        console.error(err);
+      }
     });
   }
 
   // Load Nodes
   loadCSV("Ontology_nodes_stm.csv", function(results) {
     results.data.forEach(row => {
-      const label = row.name || row.class || row["~labels"];
+      const labelText = row.name || row.class || row["~labels"] || "Node";
+
       nodes.add({
         id: row["~id"],
-        label: label,
+        label: labelText,
         title: `
-          <b>Label:</b> ${row["~labels"]}<br/>
+          <b>Label:</b> ${row["~labels"] || "N/A"}<br/>
           <b>Class:</b> ${row.class || "N/A"}<br/>
           <b>Datatype:</b> ${row.datatype || "N/A"}
         `,
@@ -78,6 +139,8 @@
         size: 18
       });
     });
+
+    statusEl.innerText = "Nodes loaded. Loading relationships…";
   });
 
   // Load Relationships
@@ -88,7 +151,7 @@
         to: row["~end_node_id"],
         label: row["~relationship_type"],
         arrows: "to",
-        font: { align: "middle" }
+        font: { align: "middle", size: 10 }
       });
     });
 
@@ -102,26 +165,30 @@
     const options = {
       interaction: {
         hover: true,
-        navigationButtons: true
+        navigationButtons: true,
+        tooltipDelay: 200
       },
       physics: {
         stabilization: true,
         barnesHut: {
-          gravitationalConstant: -40000,
-          springLength: 120
+          gravitationalConstant: -35000,
+          springLength: 120,
+          springConstant: 0.04
         }
       },
       nodes: {
-        font: {
-          size: 14
-        }
+        font: { size: 14 }
       },
       edges: {
-        color: "#343a40"
+        color: "#343a40",
+        smooth: true
       }
     };
 
     new vis.Network(container, data, options);
+
+    statusEl.innerText =
+      `Graph loaded: ${nodes.length} nodes, ${edges.length} relationships`;
   }
 </script>
 
