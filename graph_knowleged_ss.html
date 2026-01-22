@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Healthcare Graph Knowledge Platform</title>
+
+  <!-- vis-network -->
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+  <!-- PapaParse -->
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+    }
+    header {
+      padding: 14px 24px;
+      background: #002b45;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    #network {
+      width: 100%;
+      height: calc(100vh - 60px);
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  Healthcare Graph Knowledge – Executive View
+</header>
+
+<div id="network"></div>
+
+<script>
+  const nodes = new vis.DataSet();
+  const edges = new vis.DataSet();
+
+  const colorMap = {
+    Property: "#6c757d",
+    Membership: "#0d6efd",
+    Beneficiary: "#198754",
+    Claim: "#dc3545",
+    FinancialRecord: "#fd7e14",
+    Provider: "#6610f2",
+    Document: "#20c997"
+  };
+
+  function loadCSV(file, callback) {
+    Papa.parse(file, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: callback
+    });
+  }
+
+  // Load Nodes
+  loadCSV("node-export.csv", function(results) {
+    results.data.forEach(row => {
+      const label = row.name || row.class || row["~labels"];
+      nodes.add({
+        id: row["~id"],
+        label: label,
+        title: `
+          <b>Label:</b> ${row["~labels"]}<br/>
+          <b>Class:</b> ${row.class || "N/A"}<br/>
+          <b>Datatype:</b> ${row.datatype || "N/A"}
+        `,
+        color: colorMap[row["~labels"]] || "#adb5bd",
+        shape: "dot",
+        size: 18
+      });
+    });
+  });
+
+  // Load Relationships
+  loadCSV("relationship-export.csv", function(results) {
+    results.data.forEach(row => {
+      edges.add({
+        from: row["~start_node_id"],
+        to: row["~end_node_id"],
+        label: row["~relationship_type"],
+        arrows: "to",
+        font: { align: "middle" }
+      });
+    });
+
+    renderGraph();
+  });
+
+  function renderGraph() {
+    const container = document.getElementById("network");
+    const data = { nodes, edges };
+
+    const options = {
+      interaction: {
+        hover: true,
+        navigationButtons: true
+      },
+      physics: {
+        stabilization: true,
+        barnesHut: {
+          gravitationalConstant: -40000,
+          springLength: 120
+        }
+      },
+      nodes: {
+        font: {
+          size: 14
+        }
+      },
+      edges: {
+        color: "#343a40"
+      }
+    };
+
+    new vis.Network(container, data, options);
+  }
+</script>
+
+</body>
+</html>
