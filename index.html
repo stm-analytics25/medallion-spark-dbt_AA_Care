@@ -62,7 +62,7 @@
   }
 
   // Load Nodes
-  loadCSV("node-export.csv", function(results) {
+  loadCSV("Ontology_nodes_stm.csv", function(results) {
     results.data.forEach(row => {
       const label = row.name || row.class || row["~labels"];
       nodes.add({
@@ -81,7 +81,7 @@
   });
 
   // Load Relationships
-  loadCSV("relationship-export.csv", function(results) {
+  loadCSV("Ontology_relationship.csv", function(results) {
     results.data.forEach(row => {
       edges.add({
         from: row["~start_node_id"],
