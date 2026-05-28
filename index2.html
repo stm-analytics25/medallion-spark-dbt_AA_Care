@@ -1,0 +1,1405 @@
+
+raw
+Provider risk report · HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Provider Risk Intelligence · MedSchm Forensic</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#f5f3ee;
+  --surface:#ffffff;
+  --surface2:#faf9f6;
+  --border:#e2dfd8;
+  --border2:#ccc9c0;
+  --text:#1a1916;
+  --muted:#7a7570;
+  --dim:#b8b4ad;
+ 
+  --red:#c0392b;   --red-l:#fdf0ef; --red-bd:#f5c6c3;
+  --amber:#b8660a; --amber-l:#fef8ed; --amber-bd:#f5ddb0;
+  --green:#1a6b3c; --green-l:#edf7f2; --green-bd:#b3dfc8;
+  --blue:#1a4a7a;  --blue-l:#eef3fa;  --blue-bd:#b8cfe8;
+  --ink:#1a1916;
+}
+ 
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;}
+ 
+/* ── TOPBAR ── */
+.topbar{background:var(--ink);color:#f5f3ee;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;}
+.topbar-brand{font-family:'Fraunces',serif;font-size:18px;font-weight:600;letter-spacing:-.01em;}
+.topbar-brand span{color:#e8b84b;font-style:italic;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.topbar-pill{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);}
+.topbar-pill.alert{border-color:#c0392b;color:#f5a09a;background:rgba(192,57,43,.15);}
+ 
+/* ── SEARCH BAR ── */
+.search-section{background:var(--ink);padding:20px 28px 28px;border-bottom:3px solid #e8b84b;}
+.search-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px;}
+.search-row{display:flex;gap:12px;max-width:800px;}
+.search-input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:12px 16px;color:#f5f3ee;font-family:'IBM Plex Mono',monospace;font-size:14px;outline:none;transition:border-color .2s;}
+.search-input::placeholder{color:rgba(255,255,255,.3);}
+.search-input:focus{border-color:#e8b84b;}
+.search-btn{padding:12px 28px;background:#e8b84b;border:none;border-radius:8px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s;}
+.search-btn:hover{opacity:.85;}
+.search-select{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:12px 14px;color:#f5f3ee;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+.search-select option{background:#1a1916;color:#f5f3ee;}
+ 
+/* ── LAYOUT ── */
+.wrap{max-width:1280px;margin:0 auto;padding:24px 28px 80px;}
+ 
+/* ── PROVIDER HEADER ── */
+.provider-header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:20px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start;}
+.prov-name{font-family:'Fraunces',serif;font-size:26px;font-weight:700;line-height:1.1;margin-bottom:4px;}
+.prov-sub{font-size:13px;color:var(--muted);}
+.prov-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.prov-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--border2);color:var(--muted);background:var(--surface2);}
+.risk-badge-wrap{text-align:right;}
+.risk-score-num{font-family:'Fraunces',serif;font-size:56px;font-weight:700;line-height:1;color:var(--red);}
+.risk-score-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.risk-vs{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:6px;}
+.risk-vs strong{color:var(--green);}
+.risk-band{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;background:var(--red-l);color:var(--red);border:1px solid var(--red-bd);}
+ 
+/* ── SCORE GAUGE ROW ── */
+.gauge-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.gauge-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.gauge-val{font-family:'Fraunces',serif;font-size:28px;font-weight:700;line-height:1;}
+.gauge-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.gauge-bar{height:4px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden;}
+.gauge-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+.c-red{color:var(--red);} .c-amber{color:var(--amber);} .c-green{color:var(--green);} .c-blue{color:var(--blue);}
+.f-red{background:var(--red);} .f-amber{background:var(--amber);} .f-green{background:var(--green);}
+ 
+/* ── TABS ── */
+.tab-nav{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px;flex-wrap:wrap;overflow-x:auto;}
+.tab-btn{padding:8px 16px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border-radius:7px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.tab-btn:hover{color:var(--text);background:var(--surface2);}
+.tab-btn.active{background:var(--ink);color:#f5f3ee;}
+.tab-btn .cnt{display:inline-block;margin-left:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:1px 6px;border-radius:10px;background:rgba(255,255,255,.15);vertical-align:middle;}
+.tab-btn:not(.active) .cnt{background:var(--border);color:var(--muted);}
+.panel{display:none;animation:fadeUp .2s ease;}
+.panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+ 
+/* ── SECTION LABEL ── */
+.sec-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:2px;}
+ 
+/* ── CHART CARD ── */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;}
+.chart-title{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:4px;}
+.chart-sub{font-size:12px;color:var(--muted);margin-bottom:18px;}
+.chart-box{position:relative;height:220px;}
+ 
+/* ── TABLE ── */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+.tbl-head{padding:16px 20px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.tbl-title{font-family:'Fraunces',serif;font-size:15px;font-weight:600;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;}
+td{padding:11px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+td.mono{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+td.amount{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;text-align:right;}
+th.r{text-align:right;}
+ 
+/* ── BADGES ── */
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid;font-weight:500;}
+.badge-red{background:var(--red-l);color:var(--red);border-color:var(--red-bd);}
+.badge-amber{background:var(--amber-l);color:var(--amber);border-color:var(--amber-bd);}
+.badge-green{background:var(--green-l);color:var(--green);border-color:var(--green-bd);}
+.badge-blue{background:var(--blue-l);color:var(--blue);border-color:var(--blue-bd);}
+.badge-gray{background:var(--surface2);color:var(--muted);border-color:var(--border2);}
+ 
+/* ── RULE VIOLATION CARD ── */
+.rule-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;border-left:4px solid var(--red);}
+.rule-card.warn{border-left-color:var(--amber);}
+.rule-title{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:var(--red);margin-bottom:4px;}
+.rule-card.warn .rule-title{color:var(--amber);}
+.rule-desc{font-size:13px;color:var(--text);margin-bottom:8px;}
+.rule-instances{font-size:12px;color:var(--muted);}
+ 
+/* ── NETWORK / SYNDICATE ── */
+.syndicate-card{background:var(--surface);border:1px solid var(--red-bd);border-radius:14px;padding:20px 24px;margin-bottom:16px;background:var(--red-l);}
+.syn-title{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--red);margin-bottom:4px;}
+.syn-sub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.syn-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.syn-stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.syn-stat-val{font-family:'Fraunces',serif;font-size:24px;font-weight:700;}
+.syn-stat-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;}
+ 
+/* ── FORENSIC CASE MANAGEMENT ── */
+.fcm-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;}
+.fcm-sidebar{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.fcm-sidebar-head{padding:14px 16px;background:var(--ink);color:#f5f3ee;}
+.fcm-sidebar-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;}
+.fcm-sidebar-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
+.fcm-case-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.fcm-case-item:hover{background:var(--surface2);}
+.fcm-case-item.active{background:var(--blue-l);border-left:3px solid var(--blue);}
+.fcm-case-num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;}
+.fcm-case-name{font-size:12px;color:var(--muted);margin-top:1px;}
+.fcm-case-status{margin-top:6px;}
+.fcm-main{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.fcm-main-head{padding:18px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.fcm-main-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;}
+.fcm-sub-tabs{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;}
+.fcm-sub-tab{padding:6px 14px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border-radius:6px;cursor:pointer;transition:all .15s;}
+.fcm-sub-tab.active{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+.fcm-body{padding:20px 22px;}
+.fcm-panel{display:none;}
+.fcm-panel.active{display:block;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+input[type=text],input[type=date],input[type=number],select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);}
+textarea{resize:vertical;min-height:80px;}
+.btn{padding:9px 18px;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn-primary{background:var(--ink);color:#f5f3ee;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);}
+.btn-row{display:flex;gap:8px;margin-top:16px;}
+.diary-entry{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--surface2);}
+.diary-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;}
+.diary-text{font-size:13px;line-height:1.6;}
+.attachment-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--surface2);}
+.att-icon{font-size:18px;}
+.att-name{font-size:13px;flex:1;}
+.att-size{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+.fin-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;padding:12px 0;border-bottom:1px solid var(--border);}
+.fin-row:last-child{border-bottom:none;}
+.fin-total{display:flex;justify-content:space-between;padding:14px 0 0;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;}
+.note-box{background:var(--amber-l);border:1px solid var(--amber-bd);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--amber);margin-bottom:14px;}
+ 
+/* ── ALERTS ── */
+.alert-bar{background:var(--red-l);border:1px solid var(--red-bd);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--red);}
+.alert-bar .icon{font-size:16px;}
+ 
+/* ── SCHEME BREAKDOWN ── */
+.scheme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.scheme-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.scheme-name{font-family:'Fraunces',serif;font-size:14px;font-weight:600;margin-bottom:12px;}
+.scheme-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.scheme-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.scheme-bar-fill{height:100%;border-radius:3px;}
+ 
+/* ── PEER BENCHMARK ── */
+.peer-radar-wrap{display:grid;grid-template-columns:340px 1fr;gap:20px;margin-bottom:20px;}
+.radar-box{position:relative;height:320px;}
+.peer-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start;}
+.peer-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.peer-kpi-val{font-family:'Fraunces',serif;font-size:22px;font-weight:700;}
+.peer-kpi-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;}
+.peer-kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.peer-rank-bar{height:6px;background:var(--border);border-radius:3px;margin-top:8px;overflow:hidden;}
+.peer-rank-fill{height:100%;border-radius:3px;}
+ 
+/* ── ADMISSION TIMELINE ── */
+.adm-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden;}
+.adm-head{background:var(--surface2);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.adm-episode{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;}
+.adm-body{padding:0;}
+.adm-row{display:grid;grid-template-columns:70px 80px 1fr 90px 100px;gap:8px;padding:10px 18px;border-bottom:1px solid var(--border);align-items:center;font-size:12px;}
+.adm-row:last-child{border-bottom:none;}
+.adm-row.violation{background:var(--red-l);}
+.adm-row.warning{background:var(--amber-l);}
+.adm-day{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+.adm-code{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;}
+ 
+/* ── OUTLIER ── */
+.outlier-row{display:grid;grid-template-columns:160px 1fr 120px 100px 100px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);font-size:13px;}
+.outlier-row:last-child{border-bottom:none;}
+.outlier-row:hover{background:var(--surface2);}
+.outlier-spark{height:28px;display:flex;align-items:flex-end;gap:2px;}
+.outlier-spark-bar{width:6px;border-radius:2px 2px 0 0;background:var(--border2);}
+.outlier-spark-bar.hi{background:var(--red);}
+.sigma-val{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;}
+ 
+/* ── RISK SCORE MODEL ── */
+.score-model-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.score-factor{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.score-factor-name{font-family:'Fraunces',serif;font-size:14px;font-weight:600;margin-bottom:4px;}
+.score-factor-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.score-weight-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.score-weight-fill{height:100%;border-radius:4px;}
+.score-weight-label{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+.score-history{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+.score-hist-row{display:grid;grid-template-columns:100px 60px 1fr 80px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);font-size:13px;}
+.score-hist-row:last-child{border-bottom:none;}
+.score-hist-bar{height:10px;border-radius:5px;background:var(--border);overflow:hidden;}
+.score-hist-fill{height:100%;border-radius:5px;}
+ 
+/* ── PRINT SUMMARY ── */
+.print-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 32px;margin-bottom:16px;}
+.print-header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.print-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:700;}
+.print-logo span{color:#e8b84b;}
+.print-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-align:right;line-height:1.8;}
+.print-score-band{display:flex;align-items:center;gap:20px;background:var(--red-l);border:1px solid var(--red-bd);border-radius:10px;padding:16px 20px;margin-bottom:20px;}
+.print-score-num{font-family:'Fraunces',serif;font-size:48px;font-weight:700;color:var(--red);line-height:1;}
+.print-score-info{flex:1;}
+.print-score-title{font-family:'Fraunces',serif;font-size:16px;font-weight:600;color:var(--red);margin-bottom:2px;}
+.print-score-sub{font-size:12px;color:var(--muted);}
+.print-finding{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;font-size:13px;}
+.print-finding:last-child{border-bottom:none;}
+.print-finding-num{font-family:'IBM Plex Mono',monospace;font-size:10px;min-width:24px;color:var(--muted);padding-top:2px;}
+.print-finding-text{flex:1;line-height:1.6;}
+.print-btn-row{display:flex;gap:10px;margin-bottom:20px;}
+.print-btn{padding:10px 22px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid;}
+.print-btn-primary{background:var(--ink);color:#f5f3ee;border-color:var(--ink);}
+.print-btn-ghost{background:transparent;color:var(--muted);border-color:var(--border2);}
+ 
+/* ── TIMELINE ── */
+.timeline{position:relative;padding-left:24px;margin-bottom:20px;}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border);}
+.tl-item{position:relative;margin-bottom:16px;}
+.tl-dot{position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--surface);background:var(--dim);}
+.tl-dot.red{background:var(--red);}
+.tl-dot.amber{background:var(--amber);}
+.tl-dot.green{background:var(--green);}
+.tl-dot.blue{background:var(--blue);}
+.tl-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:2px;}
+.tl-text{font-size:13px;line-height:1.6;}
+ 
+@media print{
+  .topbar,.search-section,.tab-nav,.print-btn-row{display:none!important;}
+  .panel{display:block!important;}
+  body{background:#fff;}
+}
+</style>
+  .gauge-row{grid-template-columns:repeat(2,1fr);}
+  .fcm-layout{grid-template-columns:1fr;}
+  .provider-header{grid-template-columns:1fr;}
+  .syn-stat-row{grid-template-columns:1fr 1fr;}
+  .form-grid,.form-grid-3{grid-template-columns:1fr;}
+  .scheme-grid{grid-template-columns:1fr;}
+}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px;}
+</style>
+</head>
+<body>
+ 
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">MedSchm <span>Forensic</span> Intelligence</div>
+  <div class="topbar-right">
+    <span class="topbar-pill alert">⚠ 3 Active Investigations</span>
+    <span class="topbar-pill">Analyst: K. Mokoena</span>
+    <span class="topbar-pill">2024-06-14</span>
+  </div>
+</div>
+ 
+<!-- SEARCH -->
+<div class="search-section">
+  <div class="search-label">Provider Risk Lookup</div>
+  <div class="search-row">
+    <input class="search-input" type="text" placeholder="Enter practice number e.g. PR-0042817" value="PR-0042817">
+    <select class="search-select">
+      <option>All Disciplines</option>
+      <option selected>General Practitioner</option>
+      <option>Specialist Physician</option>
+      <option>Audiologist</option>
+      <option>Physiotherapist</option>
+      <option>Orthopaedic Surgeon</option>
+    </select>
+    <button class="search-btn" onclick="alert('Loaded: PR-0042817')">Generate Report</button>
+  </div>
+</div>
+ 
+<div class="wrap">
+ 
+<!-- PROVIDER HEADER -->
+<div class="provider-header">
+  <div>
+    <div class="prov-name">Dr. S.J. Mthembu</div>
+    <div class="prov-sub">General Practitioner · Practice No. PR-0042817 · Johannesburg North, GP</div>
+    <div class="prov-meta">
+      <span class="prov-tag">ICD-10: Active</span>
+      <span class="prov-tag">HPCSA Reg: MP0234891</span>
+      <span class="prov-tag">Network: In-Network</span>
+      <span class="prov-tag">Discipline: GP</span>
+      <span class="prov-tag">Claims Period: Jan 2022 – Dec 2024</span>
+      <span class="prov-tag" style="background:var(--red-l);color:var(--red);border-color:var(--red-bd)">⚑ Forensic Flagged</span>
+    </div>
+  </div>
+  <div class="risk-badge-wrap">
+    <div class="risk-score-num">84</div>
+    <div class="risk-score-label">Provider Risk Score</div>
+    <div class="risk-vs">National Avg (GP): <strong>31</strong> &nbsp;|&nbsp; Peer 90th pctile: 62</div>
+    <span class="risk-band">● HIGH RISK</span>
+  </div>
+</div>
+ 
+<!-- SCORE COMPONENT GAUGES -->
+<div class="gauge-row">
+  <div class="gauge-card">
+    <div class="gauge-val c-red">91</div>
+    <div class="gauge-label">Billing anomaly</div>
+    <div class="gauge-bar"><div class="gauge-fill f-red" style="width:91%"></div></div>
+  </div>
+  <div class="gauge-card">
+    <div class="gauge-val c-red">78</div>
+    <div class="gauge-label">Code conflict</div>
+    <div class="gauge-bar"><div class="gauge-fill f-red" style="width:78%"></div></div>
+  </div>
+  <div class="gauge-card">
+    <div class="gauge-val c-red">88</div>
+    <div class="gauge-label">Network exposure</div>
+    <div class="gauge-bar"><div class="gauge-fill f-red" style="width:88%"></div></div>
+  </div>
+  <div class="gauge-card">
+    <div class="gauge-val c-amber">64</div>
+    <div class="gauge-label">Claim velocity</div>
+    <div class="gauge-bar"><div class="gauge-fill f-amber" style="width:64%"></div></div>
+  </div>
+  <div class="gauge-card">
+    <div class="gauge-val c-amber">55</div>
+    <div class="gauge-label">Member overlap</div>
+    <div class="gauge-bar"><div class="gauge-fill f-amber" style="width:55%"></div></div>
+  </div>
+</div>
+ 
+<!-- TABS -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('claims')" id="btn-claims">Claims History</button>
+  <button class="tab-btn" onclick="showTab('codes')" id="btn-codes">Procedure Codes<span class="cnt">20</span></button>
+  <button class="tab-btn" onclick="showTab('members')" id="btn-members">Top Members<span class="cnt">20</span></button>
+  <button class="tab-btn" onclick="showTab('nappi')" id="btn-nappi">NAPPI Codes</button>
+  <button class="tab-btn" onclick="showTab('rules')" id="btn-rules">Rule Violations<span class="cnt" style="background:#c0392b;color:#fff">7</span></button>
+  <button class="tab-btn" onclick="showTab('network')" id="btn-network">Syndicate Analysis</button>
+  <button class="tab-btn" onclick="showTab('schemes')" id="btn-schemes">Scheme Breakdown</button>
+  <button class="tab-btn" onclick="showTab('fcm')" id="btn-fcm">🔒 Forensic Case</button>
+  <button class="tab-btn" onclick="showTab('peer')" id="btn-peer">Peer Benchmark</button>
+  <button class="tab-btn" onclick="showTab('admission')" id="btn-admission">Admission Patterns</button>
+  <button class="tab-btn" onclick="showTab('outlier')" id="btn-outlier">Outlier Detection<span class="cnt" style="background:#c0392b;color:#fff">5</span></button>
+  <button class="tab-btn" onclick="showTab('scoring')" id="btn-scoring">Risk Score Model</button>
+  <button class="tab-btn" onclick="showTab('summary')" id="btn-summary">🖨 Print Summary</button>
+</div>
+ 
+<!-- ══ CLAIMS HISTORY ══ -->
+<div id="panel-claims" class="panel active">
+  <div class="chart-card">
+    <div class="chart-title">Monthly Claims — Paid Amounts (ZAR)</div>
+    <div class="chart-sub">Jan 2022 – Dec 2024 · Spike detection active · Peer band shown in grey</div>
+    <div class="chart-box"><canvas id="claimsChart"></canvas></div>
+  </div>
+  <div class="gauge-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="gauge-card">
+      <div class="gauge-val c-red">R 4.28M</div>
+      <div class="gauge-label">3-Year Total Paid</div>
+      <div class="gauge-bar"><div class="gauge-fill f-red" style="width:88%"></div></div>
+    </div>
+    <div class="gauge-card">
+      <div class="gauge-val c-amber">R 118.9K</div>
+      <div class="gauge-label">Monthly Average</div>
+      <div class="gauge-bar"><div class="gauge-fill f-amber" style="width:64%"></div></div>
+    </div>
+    <div class="gauge-card">
+      <div class="gauge-val c-red">+312%</div>
+      <div class="gauge-label">Peak Month vs Avg</div>
+      <div class="gauge-bar"><div class="gauge-fill f-red" style="width:92%"></div></div>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span class="tbl-title">Annual Summary</span>
+    </div>
+    <table>
+      <thead><tr><th>Year</th><th>Claims Count</th><th>Unique Members</th><th class="r">Total Paid (ZAR)</th><th class="r">Avg Per Claim</th><th class="r">vs Peer Avg</th><th>Trend</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">2022</td><td>1,204</td><td>312</td><td class="amount">R 1,028,440</td><td class="amount">R 854</td><td class="amount c-amber">+38%</td><td><span class="badge badge-amber">↑ Elevated</span></td></tr>
+        <tr><td class="mono">2023</td><td>1,891</td><td>489</td><td class="amount">R 1,647,210</td><td class="amount">R 871</td><td class="amount c-red">+112%</td><td><span class="badge badge-red">↑↑ Spike</span></td></tr>
+        <tr><td class="mono">2024</td><td>2,140</td><td>541</td><td class="amount">R 1,604,780</td><td class="amount">R 750</td><td class="amount c-red">+98%</td><td><span class="badge badge-red">↑↑ Spike</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+ 
+<!-- ══ PROCEDURE CODES ══ -->
+<div id="panel-codes" class="panel">
+  <div class="alert-bar"><span class="icon">⚠</span> 4 procedure codes in this list have associated billing rule violations. See Rule Violations tab for detail.</div>
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span class="tbl-title">Top 20 Procedure Codes — 3 Year Period</span>
+      <span class="badge badge-gray">Descending by total billed</span>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Code</th><th>Description</th><th>Count</th><th class="r">Total Billed (ZAR)</th><th class="r">Avg per Claim</th><th class="r">Peer Avg Count</th><th>Flag</th></tr></thead>
+      <tbody id="proc-tbody"></tbody>
+    </table>
+  </div>
+</div>
+ 
+<!-- ══ TOP MEMBERS ══ -->
+<div id="panel-members" class="panel">
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span class="tbl-title">Top 20 Members by Amount Billed — PR-0042817</span>
+      <span class="badge badge-red">3 members on flagged-provider list</span>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Member ID</th><th>Member Name</th><th>Scheme</th><th>Claims</th><th class="r">Total Paid (ZAR)</th><th>No-Pay / Forensic Link</th></tr></thead>
+      <tbody id="members-tbody"></tbody>
+    </table>
+  </div>
+</div>
+ 
+<!-- ══ NAPPI CODES ══ -->
+<div id="panel-nappi" class="panel">
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span class="tbl-title">NAPPI Medicine Codes — Billed by PR-0042817</span>
+      <span class="badge badge-gray">Descending by total billed</span>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>NAPPI Code</th><th>Product Name</th><th>Strength / Form</th><th>Units Billed</th><th class="r">Total Billed (ZAR)</th><th>Peer Rank</th></tr></thead>
+      <tbody id="nappi-tbody"></tbody>
+    </table>
+  </div>
+</div>
+ 
+<!-- ══ RULE VIOLATIONS ══ -->
+<div id="panel-rules" class="panel">
+  <div class="alert-bar"><span class="icon">🚨</span> 7 billing rule violations detected across 3 rule sets. Total financial exposure: <strong>R 218,440</strong></div>
+ 
+  <div class="sec-label">Code conflict violations</div>
+ 
+  <div class="rule-card">
+    <div class="rule-title">VIOLATION · Codes 5790 billed with 5791 and 5792 during hospital admission</div>
+    <div class="rule-desc">Code 5790 (Consultation – hospital visit) cannot be billed simultaneously with 5791 and 5792 while a member is admitted. This combination was detected on admitted members, suggesting unbundling of a single consultation.</div>
+    <div class="rule-instances">14 instances · Members: MBR-00312, MBR-00489, MBR-00201 (+11) · Financial exposure: R 48,320</div>
+  </div>
+ 
+  <div class="rule-card">
+    <div class="rule-title">VIOLATION · Codes 5793 billed with 5794 and 5795 during hospital admission</div>
+    <div class="rule-desc">Code 5793 cannot be billed with 5794 and 5795 while a member is admitted to hospital. Found in 9 admission episodes — consistent pattern of billing the full set on day 1 of admission.</div>
+    <div class="rule-instances">9 instances · Members: MBR-00112, MBR-00098 (+7) · Financial exposure: R 31,900</div>
+  </div>
+ 
+  <div class="rule-card">
+    <div class="rule-title">VIOLATION · Codes 0132/3 billed with 0190/1/2</div>
+    <div class="rule-desc">These code sets are mutually exclusive. Billing 013X with 019X represents duplicate billing for the same service. Detected across multiple members in the same date ranges.</div>
+    <div class="rule-instances">22 instances · Members: MBR-00401, MBR-00387 (+20) · Financial exposure: R 67,210</div>
+  </div>
+ 
+  <div class="sec-label" style="margin-top:20px">ICU admission code violations</div>
+ 
+  <div class="rule-card warn">
+    <div class="rule-title">WARNING · Code 1205 billed more than once per ICU admission</div>
+    <div class="rule-desc">Code 1205 is only claimable on Day 1 of an ICU admission. Day 2–14 must use code 1206, and each subsequent day must use code 1207. This provider billed 1205 on Day 2 and Day 3 of the same admission episode for 3 members.</div>
+    <div class="rule-instances">3 instances · Members: MBR-00201, MBR-00542, MBR-00318 · Financial exposure: R 39,800</div>
+  </div>
+ 
+  <div class="rule-card warn">
+    <div class="rule-title">WARNING · Code 1212 billed more than once per ICU admission</div>
+    <div class="rule-desc">Code 1212 (ICU nursing – Day 1) repeated across consecutive days instead of transitioning to 1213 (Day 2–14) and 1214 (subsequent days). Detected in 2 admission episodes.</div>
+    <div class="rule-instances">2 instances · Members: MBR-00201, MBR-00099 · Financial exposure: R 18,200</div>
+  </div>
+ 
+  <div class="rule-card warn">
+    <div class="rule-title">WARNING · Outlier billing frequency vs discipline peers</div>
+    <div class="rule-desc">This practice billed procedure code 0190 at 4.2× the 90th percentile for GPs in the same region. No clinical justification codes accompany these claims. Peer average: 12 claims/month. This provider: 51 claims/month.</div>
+    <div class="rule-instances">Across 36 months · Financial exposure: R 13,010</div>
+  </div>
+</div>
+ 
+<!-- ══ SYNDICATE / NETWORK ══ -->
+<div id="panel-network" class="panel">
+  <div class="syndicate-card">
+    <div class="syn-title">⚠ Syndicate Risk Detected</div>
+    <div class="syn-sub">Members treated by PR-0042817 who also utilised No-Pay or Forensic-Blocked providers within the same claim period.</div>
+    <div class="syn-stat-row">
+      <div class="syn-stat">
+        <div class="syn-stat-val c-red">34%</div>
+        <div class="syn-stat-lbl">Members also used<br>No-Pay providers</div>
+      </div>
+      <div class="syn-stat">
+        <div class="syn-stat-val c-red">18%</div>
+        <div class="syn-stat-lbl">Members also used<br>Forensic-Blocked providers</div>
+      </div>
+      <div class="syn-stat">
+        <div class="syn-stat-val c-amber">8</div>
+        <div class="syn-stat-lbl">Distinct blocked providers<br>in shared-member network</div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span class="tbl-title">Shared Members — Blocked / No-Pay Provider Overlap</span>
+    </div>
+    <table>
+      <thead><tr><th>Member ID</th><th>Shared Provider</th><th>Practice No.</th><th>Block Type</th><th>Shared Claims</th><th class="r">Combined Exposure</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">MBR-00312</td><td>Dr. T. Nkosi</td><td class="mono">PR-0081234</td><td><span class="badge badge-red">Forensic Blocked</span></td><td>14</td><td class="amount">R 42,100</td></tr>
+        <tr><td class="mono">MBR-00489</td><td>ABC Pharmacy</td><td class="mono">PR-0091002</td><td><span class="badge badge-red">No Pay</span></td><td>9</td><td class="amount">R 18,450</td></tr>
+        <tr><td class="mono">MBR-00201</td><td>Dr. T. Nkosi</td><td class="mono">PR-0081234</td><td><span class="badge badge-red">Forensic Blocked</span></td><td>22</td><td class="amount">R 67,300</td></tr>
+        <tr><td class="mono">MBR-00112</td><td>Sunrise Radiology</td><td class="mono">PR-0072819</td><td><span class="badge badge-amber">Under Review</span></td><td>6</td><td class="amount">R 24,800</td></tr>
+        <tr><td class="mono">MBR-00542</td><td>ABC Pharmacy</td><td class="mono">PR-0091002</td><td><span class="badge badge-red">No Pay</span></td><td>7</td><td class="amount">R 12,200</td></tr>
+        <tr><td class="mono">MBR-00401</td><td>Dr. M. Dlamini</td><td class="mono">PR-0055441</td><td><span class="badge badge-red">Forensic Blocked</span></td><td>18</td><td class="amount">R 51,090</td></tr>
+      </tbody>
+    </table>
+  </div>
+ 
+  <div class="chart-card" style="margin-top:0">
+    <div class="chart-title">Multi-Provider Utilisation — Shared Member Distribution</div>
+    <div class="chart-sub">% of DR. S.J. Mthembu's member base also utilising other providers (all types)</div>
+    <div class="chart-box"><canvas id="networkChart"></canvas></div>
+  </div>
+</div>
+ 
+<!-- ══ SCHEME BREAKDOWN ══ -->
+<div id="panel-schemes" class="panel">
+  <div class="note-box">🔮 Multi-scheme view active. Benefit targeting detection: an unusual spike in a scheme with richer benefits (e.g. Audiologist billing more on schemes where hearing aids are covered) will surface here as scheme concentration risk.</div>
+  <div class="scheme-grid">
+    <div class="scheme-card">
+      <div class="scheme-name">MedSchm Classic</div>
+      <div class="scheme-bar-row"><span style="width:90px;font-size:11px;color:var(--muted)">Claim volume</span><div class="scheme-bar-track"><div class="scheme-bar-fill f-red" style="width:78%"></div></div><span class="mono" style="font-size:11px">78%</span></div>
+      <div class="scheme-bar-row"><span style="width:90px;font-size:11px;color:var(--muted)">Avg paid</span><div class="scheme-bar-track"><div class="scheme-bar-fill f-amber" style="width:64%"></div></div><span class="mono" style="font-size:11px">R 904</span></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">2,841 claims · R 2.57M total</div>
+      <div style="margin-top:6px"><span class="badge badge-red">Above peer band</span></div>
+    </div>
+    <div class="scheme-card">
+      <div class="scheme-name">MedSchm Saver</div>
+      <div class="scheme-bar-row"><span style="width:90px;font-size:11px;color:var(--muted)">Claim volume</span><div class="scheme-bar-track"><div class="scheme-bar-fill f-amber" style="width:34%"></div></div><span class="mono" style="font-size:11px">34%</span></div>
+      <div class="scheme-bar-row"><span style="width:90px;font-size:11px;color:var(--muted)">Avg paid</span><div class="scheme-bar-track"><div class="scheme-bar-fill f-green" style="width:48%"></div></div><span class="mono" style="font-size:11px">R 620</span></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">1,244 claims · R 771K total</div>
+      <div style="margin-top:6px"><span class="badge badge-amber">Slightly elevated</span></div>
+    </div>
+    <div class="scheme-card">
+      <div class="scheme-name">MedSchm Essential</div>
+      <div class="scheme-bar-row"><span style="width:90px;font-size:11px;color:var(--muted)">Claim volume</span><div class="scheme-bar-track"><div class="scheme-bar-fill f-green" style="width:18%"></div></div><span class="mono" style="font-size:11px">18%</span></div>
+      <div class="scheme-bar-row"><span style="width:90px;font-size:11px;color:var(--muted)">Avg paid</span><div class="scheme-bar-track"><div class="scheme-bar-fill f-green" style="width:40%"></div></div><span class="mono" style="font-size:11px">R 540</span></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">659 claims · R 356K total</div>
+      <div style="margin-top:6px"><span class="badge badge-green">Within peer band</span></div>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Monthly Claim Amounts by Scheme</div>
+    <div class="chart-sub">Benefit-targeting detection — spikes on richer schemes surface here</div>
+    <div class="chart-box"><canvas id="schemeChart"></canvas></div>
+  </div>
+</div>
+ 
+<!-- ══ FORENSIC CASE MANAGEMENT ══ -->
+<div id="panel-fcm" class="panel">
+  <div class="fcm-layout">
+    <!-- Sidebar -->
+    <div class="fcm-sidebar">
+      <div class="fcm-sidebar-head">
+        <div class="fcm-sidebar-title">Case Files</div>
+        <div class="fcm-sidebar-sub">PR-0042817 · Dr. S.J. Mthembu</div>
+      </div>
+      <div class="fcm-case-item active" onclick="selectCase(this)">
+        <div class="fcm-case-num">FCM-2024-0089</div>
+        <div class="fcm-case-name">Unbundling – Code 5790/91/92</div>
+        <div class="fcm-case-status"><span class="badge badge-red">Open</span> <span class="badge badge-gray">2024-03-11</span></div>
+      </div>
+      <div class="fcm-case-item" onclick="selectCase(this)">
+        <div class="fcm-case-num">FCM-2023-0041</div>
+        <div class="fcm-case-name">ICU Code Duplication</div>
+        <div class="fcm-case-status"><span class="badge badge-amber">Pending</span> <span class="badge badge-gray">2023-11-05</span></div>
+      </div>
+      <div class="fcm-case-item" onclick="selectCase(this)">
+        <div class="fcm-case-num">FCM-2022-0018</div>
+        <div class="fcm-case-name">Syndicate – Pharmacy link</div>
+        <div class="fcm-case-status"><span class="badge badge-green">Closed</span> <span class="badge badge-gray">2022-08-20</span></div>
+      </div>
+      <div style="padding:12px 16px">
+        <button class="btn btn-primary" style="width:100%;font-size:12px" onclick="alert('New case form would open')">+ New Case</button>
+      </div>
+    </div>
+ 
+    <!-- Main case view -->
+    <div class="fcm-main">
+      <div class="fcm-main-head">
+        <div>
+          <div class="fcm-main-title">FCM-2024-0089</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Opened 2024-03-11 · Assigned: K. Mokoena</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge badge-red">Open</span>
+          <span class="badge badge-blue">Valid</span>
+        </div>
+      </div>
+ 
+      <!-- Sub-tabs -->
+      <div style="padding:12px 22px;border-bottom:1px solid var(--border);background:var(--surface2)">
+        <div class="fcm-sub-tabs">
+          <button class="fcm-sub-tab active" onclick="showFcm('details')">Details</button>
+          <button class="fcm-sub-tab" onclick="showFcm('diary')">Diary</button>
+          <button class="fcm-sub-tab" onclick="showFcm('evidence')">Evidence</button>
+          <button class="fcm-sub-tab" onclick="showFcm('financial')">Financial</button>
+          <button class="fcm-sub-tab" onclick="showFcm('regulatory')">Regulatory</button>
+        </div>
+      </div>
+ 
+      <div class="fcm-body">
+ 
+        <!-- DETAILS -->
+        <div class="fcm-panel active" id="fcm-details">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Case Number</label>
+              <input type="text" value="FCM-2024-0089" readonly>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select>
+                <option selected>Open</option>
+                <option>Pending</option>
+                <option>Cancelled</option>
+                <option>Duplicate</option>
+                <option>Closed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Validity</label>
+              <select>
+                <option selected>Valid</option>
+                <option>Invalid</option>
+                <option>Under Assessment</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date Opened</label>
+              <input type="date" value="2024-03-11">
+            </div>
+            <div class="form-group">
+              <label>Allegation Type</label>
+              <select>
+                <option selected>Unbundling of Codes</option>
+                <option>Upcoding</option>
+                <option>Phantom Billing</option>
+                <option>Identity Fraud</option>
+                <option>Syndicate / Collusion</option>
+                <option>ICU Code Abuse</option>
+                <option>Formulary Bypass</option>
+                <option>Benefit Targeting</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Action Taken</label>
+              <select>
+                <option>Select action…</option>
+                <option selected>Claim Suspension</option>
+                <option>Repayment Agreement</option>
+                <option>Claim Reversal</option>
+                <option>Provider Suspended</option>
+                <option>No Action – Insufficient Evidence</option>
+                <option>Referred to Regulatory Body</option>
+                <option>Criminal Referral</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group full" style="margin-bottom:14px">
+            <label>High Level Summary</label>
+            <textarea style="min-height:100px">Provider PR-0042817 identified billing codes 5790, 5791 and 5792 simultaneously on 14 occasions while members were admitted to hospital. Pattern consistent with unbundling of a single ward consultation into multiple billable components. Financial exposure estimated at R 48,320. Case escalated following automated rule engine alert on 2024-03-10.</textarea>
+          </div>
+          <div class="form-group full" style="margin-bottom:14px">
+            <label>Follow-up Date</label>
+            <input type="date" value="2024-07-01" style="max-width:220px">
+          </div>
+          <div class="note-box" style="margin-top:0">Previous cases for this provider: FCM-2023-0041 (Pending) · FCM-2022-0018 (Closed – Repayment Agreement R 34,200)</div>
+          <div class="btn-row">
+            <button class="btn btn-primary">Save Changes</button>
+            <button class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+ 
+        <!-- DIARY -->
+        <div class="fcm-panel" id="fcm-diary">
+          <div class="form-group full" style="margin-bottom:10px">
+            <label>New Diary Entry</label>
+            <textarea placeholder="Record note, call summary, meeting outcome…"></textarea>
+          </div>
+          <div class="btn-row" style="margin-bottom:20px">
+            <button class="btn btn-primary" onclick="alert('Entry saved')">Add Entry</button>
+          </div>
+          <div class="diary-entry">
+            <div class="diary-meta">2024-06-10 · 14:32 · K. Mokoena</div>
+            <div class="diary-text">Called provider rooms. Spoke to Dr. Mthembu's billing administrator (Ms. R. Pillay). She acknowledged awareness of the query. Requested billing records for the 14 flagged dates. Agreed to submit within 5 business days.</div>
+          </div>
+          <div class="diary-entry">
+            <div class="diary-meta">2024-05-22 · 09:15 · K. Mokoena</div>
+            <div class="diary-text">Written request for clinical records and billing substantiation sent via registered email. Delivery confirmed. Awaiting response by 2024-06-05.</div>
+          </div>
+          <div class="diary-entry">
+            <div class="diary-meta">2024-03-12 · 11:00 · System Auto-Flag</div>
+            <div class="diary-text">Case auto-created by Forensic Rule Engine. 14 instances of code conflict detected (5790+5791+5792 on admitted members). Escalated for analyst review.</div>
+          </div>
+        </div>
+ 
+        <!-- EVIDENCE -->
+        <div class="fcm-panel" id="fcm-evidence">
+          <div class="note-box">Attach call recordings, emails, statements, meeting minutes, clinical records or any supporting documentation.</div>
+          <div class="form-grid" style="margin-bottom:16px">
+            <div class="form-group">
+              <label>Document Type</label>
+              <select>
+                <option>Email Correspondence</option>
+                <option>Call Recording</option>
+                <option>Clinical Records</option>
+                <option>Statement</option>
+                <option>Meeting Minutes</option>
+                <option>Claim Data Extract</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date of Document</label>
+              <input type="date" value="2024-06-10">
+            </div>
+            <div class="form-group full">
+              <label>Description</label>
+              <input type="text" placeholder="Brief description of document…">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="alert('Upload dialogue would open')">Upload Document</button>
+          <div style="margin-top:20px">
+            <div class="attachment-row">
+              <span class="att-icon">📧</span>
+              <span class="att-name">2024-05-22_written_request_billing_records.pdf</span>
+              <span class="att-size">148 KB</span>
+              <span class="badge badge-blue">Email</span>
+            </div>
+            <div class="attachment-row">
+              <span class="att-icon">🎙️</span>
+              <span class="att-name">2024-06-10_call_recording_RPillay.mp3</span>
+              <span class="att-size">4.2 MB</span>
+              <span class="badge badge-amber">Call Recording</span>
+            </div>
+            <div class="attachment-row">
+              <span class="att-icon">📋</span>
+              <span class="att-name">claim_extract_FCM2024-0089_14instances.xlsx</span>
+              <span class="att-size">82 KB</span>
+              <span class="badge badge-gray">Claim Data</span>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- FINANCIAL -->
+        <div class="fcm-panel" id="fcm-financial">
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Financial Type</label>
+              <select>
+                <option selected>Repayment Agreement</option>
+                <option>Claim Reversal</option>
+                <option>Case Transaction</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Total Exposure (ZAR)</label>
+              <input type="number" value="48320">
+            </div>
+            <div class="form-group">
+              <label>Amount Recovered (ZAR)</label>
+              <input type="number" value="0">
+            </div>
+          </div>
+          <div style="margin-top:4px;margin-bottom:16px">
+            <div class="fin-row">
+              <div class="form-group"><label>Date</label><input type="date" value="2024-06-01"></div>
+              <div class="form-group"><label>Description</label><input type="text" value="Initial suspension of claims pending investigation"></div>
+              <div class="form-group"><label>Amount (ZAR)</label><input type="number" value="48320"></div>
+              <div><button class="btn btn-ghost" style="font-size:12px">Remove</button></div>
+            </div>
+            <div class="fin-row">
+              <div class="form-group"><label>Date</label><input type="date"></div>
+              <div class="form-group"><label>Description</label><input type="text" placeholder="Add transaction…"></div>
+              <div class="form-group"><label>Amount (ZAR)</label><input type="number"></div>
+              <div><button class="btn btn-ghost" style="font-size:12px" onclick="alert('Row added')">+ Add</button></div>
+            </div>
+          </div>
+          <div class="fin-total">
+            <span>Total Financial Exposure</span>
+            <span style="color:var(--red)">R 48,320.00</span>
+          </div>
+          <div class="fin-total" style="border-top:1px solid var(--border);margin-top:8px;padding-top:14px">
+            <span>Total Recovered</span>
+            <span style="color:var(--green)">R 0.00</span>
+          </div>
+          <div class="btn-row" style="margin-top:20px">
+            <button class="btn btn-primary">Save Financial Record</button>
+          </div>
+        </div>
+ 
+        <!-- REGULATORY -->
+        <div class="fcm-panel" id="fcm-regulatory">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Regulatory Body</label>
+              <select>
+                <option selected>HPCSA (Health Professions Council)</option>
+                <option>SAMA (SA Medical Association)</option>
+                <option>Pharmacy Board</option>
+                <option>FSCA (Financial Sector Conduct Authority)</option>
+                <option>SAPS / NPA</option>
+                <option>CMS (Council for Medical Schemes)</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date Reported</label>
+              <input type="date">
+            </div>
+            <div class="form-group">
+              <label>Reference / Case Number</label>
+              <input type="text" placeholder="Regulatory body reference…">
+            </div>
+            <div class="form-group">
+              <label>Outcome / Status</label>
+              <select>
+                <option selected>Awaiting Acknowledgement</option>
+                <option>Under Investigation</option>
+                <option>Hearing Scheduled</option>
+                <option>Sanction Imposed</option>
+                <option>Closed – No Action</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Notes</label>
+              <textarea placeholder="Record any communication with the regulatory body…"></textarea>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary">Save Regulatory Record</button>
+            <button class="btn btn-danger" onclick="alert('Formal referral package would generate')">Generate Referral Package</button>
+          </div>
+        </div>
+ 
+      </div><!-- /fcm-body -->
+    </div><!-- /fcm-main -->
+  </div><!-- /fcm-layout -->
+</div>
+ 
+ 
+<!-- ══ PEER BENCHMARK ══ -->
+<div id="panel-peer" class="panel">
+  <div class="note-box" style="background:var(--blue-l);border-color:var(--blue-bd);color:var(--blue)">
+    📊 Peer group: General Practitioners · Gauteng region · Minimum 200 claims/year · n=312 providers. Scores are percentile-ranked within this cohort.
+  </div>
+ 
+  <div class="peer-radar-wrap">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-title">Risk Dimension Radar</div>
+      <div class="chart-sub">PR-0042817 vs peer median vs 90th percentile</div>
+      <div class="radar-box"><canvas id="radarChart"></canvas></div>
+    </div>
+    <div class="peer-kpi-grid">
+      <div class="peer-kpi">
+        <div class="peer-kpi-val c-red">97th</div>
+        <div class="peer-kpi-lbl">Claims volume percentile</div>
+        <div class="peer-kpi-sub">2,140 claims/yr vs peer avg 641</div>
+        <div class="peer-rank-bar"><div class="peer-rank-fill f-red" style="width:97%"></div></div>
+      </div>
+      <div class="peer-kpi">
+        <div class="peer-kpi-val c-red">94th</div>
+        <div class="peer-kpi-lbl">Avg cost per claim percentile</div>
+        <div class="peer-kpi-sub">R 750 vs peer avg R 421</div>
+        <div class="peer-rank-bar"><div class="peer-rank-fill f-red" style="width:94%"></div></div>
+      </div>
+      <div class="peer-kpi">
+        <div class="peer-kpi-val c-red">99th</div>
+        <div class="peer-kpi-lbl">Hospital code frequency</div>
+        <div class="peer-kpi-sub">5790 billed 344× vs peer avg 52×</div>
+        <div class="peer-rank-bar"><div class="peer-rank-fill f-red" style="width:99%"></div></div>
+      </div>
+      <div class="peer-kpi">
+        <div class="peer-kpi-val c-red">96th</div>
+        <div class="peer-kpi-lbl">ICU code utilisation</div>
+        <div class="peer-kpi-sub">1205 billed 211× vs peer avg 18×</div>
+        <div class="peer-rank-bar"><div class="peer-rank-fill f-red" style="width:96%"></div></div>
+      </div>
+      <div class="peer-kpi">
+        <div class="peer-kpi-val c-amber">82nd</div>
+        <div class="peer-kpi-lbl">Unique member count</div>
+        <div class="peer-kpi-sub">541 members vs peer avg 198</div>
+        <div class="peer-rank-bar"><div class="peer-rank-fill f-amber" style="width:82%"></div></div>
+      </div>
+      <div class="peer-kpi">
+        <div class="peer-kpi-val c-amber">78th</div>
+        <div class="peer-kpi-lbl">NAPPI prescribing rate</div>
+        <div class="peer-kpi-sub">18,020 units vs peer avg 6,840</div>
+        <div class="peer-rank-bar"><div class="peer-rank-fill f-amber" style="width:78%"></div></div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="chart-card">
+    <div class="chart-title">Annual Total Paid — Provider vs Peer Cohort (ZAR)</div>
+    <div class="chart-sub">Box plot equivalent: peer min / 25th / median / 75th / 90th vs this provider</div>
+    <div class="chart-box"><canvas id="peerBarChart"></canvas></div>
+  </div>
+ 
+  <div class="tbl-wrap">
+    <div class="tbl-head"><span class="tbl-title">Peer Cohort Comparison — Key Metrics</span></div>
+    <table>
+      <thead><tr><th>Metric</th><th class="r">This Provider</th><th class="r">Peer Median</th><th class="r">Peer 90th pctile</th><th class="r">Peer Max</th><th>Percentile</th></tr></thead>
+      <tbody>
+        <tr><td>Annual claims (2024)</td><td class="amount">2,140</td><td class="amount">641</td><td class="amount">1,180</td><td class="amount">2,890</td><td><span class="badge badge-red">97th</span></td></tr>
+        <tr><td>Total paid 3-yr (ZAR)</td><td class="amount">R 4.28M</td><td class="amount">R 1.04M</td><td class="amount">R 2.41M</td><td class="amount">R 6.12M</td><td><span class="badge badge-red">94th</span></td></tr>
+        <tr><td>Code 0190 frequency/yr</td><td class="amount">204</td><td class="amount">41</td><td class="amount">98</td><td class="amount">312</td><td><span class="badge badge-red">99th</span></td></tr>
+        <tr><td>Hospital codes billed</td><td class="amount">812</td><td class="amount">88</td><td class="amount">241</td><td class="amount">1,104</td><td><span class="badge badge-red">96th</span></td></tr>
+        <tr><td>Unique members/yr</td><td class="amount">541</td><td class="amount">198</td><td class="amount">412</td><td class="amount">780</td><td><span class="badge badge-amber">82nd</span></td></tr>
+        <tr><td>Avg claim value (ZAR)</td><td class="amount">R 750</td><td class="amount">R 421</td><td class="amount">R 618</td><td class="amount">R 1,240</td><td><span class="badge badge-red">94th</span></td></tr>
+        <tr><td>NAPPI units prescribed/yr</td><td class="amount">18,020</td><td class="amount">6,840</td><td class="amount">12,400</td><td class="amount">28,100</td><td><span class="badge badge-amber">78th</span></td></tr>
+        <tr><td>Rule violation count</td><td class="amount">7</td><td class="amount">0</td><td class="amount">1</td><td class="amount">12</td><td><span class="badge badge-red">95th</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+ 
+<!-- ══ ADMISSION PATTERNS ══ -->
+<div id="panel-admission" class="panel">
+  <div class="alert-bar"><span class="icon">🏥</span> 3 admission episodes contain confirmed code sequence violations. ICU code misuse detected in 2 episodes. Total admission-related exposure: <strong>R 139,920</strong></div>
+ 
+  <div class="sec-label">Admission Episode Analysis — Flagged Episodes</div>
+ 
+  <div class="adm-card">
+    <div class="adm-head">
+      <div>
+        <span class="adm-episode">Episode ADM-2024-0041</span>
+        <span style="margin-left:12px;font-size:12px;color:var(--muted)">Member MBR-00201 · Admitted 2024-02-14 · Discharged 2024-02-22 · Hospital: Netcare Sunninghill</span>
+      </div>
+      <span class="badge badge-red">3 Violations</span>
+    </div>
+    <div class="adm-body">
+      <div class="adm-row" style="background:var(--surface2);font-weight:500">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Day</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Date</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Code(s) Billed</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Amount</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Status</span>
+      </div>
+      <div class="adm-row violation">
+        <span class="adm-day">Day 1</span><span class="adm-code">2024-02-14</span>
+        <span><span class="adm-code">5790</span> + <span class="adm-code" style="color:var(--red)">5791</span> + <span class="adm-code" style="color:var(--red)">5792</span> — unbundled ward visit</span>
+        <span class="amount">R 4,180</span><span><span class="badge badge-red">VIOLATION</span></span>
+      </div>
+      <div class="adm-row">
+        <span class="adm-day">Day 1</span><span class="adm-code">2024-02-14</span>
+        <span><span class="adm-code">1205</span> — ICU management Day 1 ✓</span>
+        <span class="amount">R 2,840</span><span><span class="badge badge-green">Valid</span></span>
+      </div>
+      <div class="adm-row violation">
+        <span class="adm-day">Day 2</span><span class="adm-code">2024-02-15</span>
+        <span><span class="adm-code" style="color:var(--red)">1205</span> — should be <strong>1206</strong> from Day 2</span>
+        <span class="amount">R 2,840</span><span><span class="badge badge-red">VIOLATION</span></span>
+      </div>
+      <div class="adm-row violation">
+        <span class="adm-day">Day 3</span><span class="adm-code">2024-02-16</span>
+        <span><span class="adm-code" style="color:var(--red)">1205</span> — should be <strong>1206</strong> (Day 2–14 code)</span>
+        <span class="amount">R 2,840</span><span><span class="badge badge-red">VIOLATION</span></span>
+      </div>
+      <div class="adm-row">
+        <span class="adm-day">Day 4–8</span><span class="adm-code">2024-02-17–21</span>
+        <span><span class="adm-code">1206</span> — ICU Day 2–14 (correct from Day 4)</span>
+        <span class="amount">R 11,200</span><span><span class="badge badge-green">Valid</span></span>
+      </div>
+      <div class="adm-row">
+        <span class="adm-day">Day 9</span><span class="adm-code">2024-02-22</span>
+        <span><span class="adm-code">5795</span> — Discharge planning consultation</span>
+        <span class="amount">R 720</span><span><span class="badge badge-green">Valid</span></span>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="adm-card">
+    <div class="adm-head">
+      <div>
+        <span class="adm-episode">Episode ADM-2023-0118</span>
+        <span style="margin-left:12px;font-size:12px;color:var(--muted)">Member MBR-00312 · Admitted 2023-08-02 · Discharged 2023-08-05 · Hospital: Life Sandton</span>
+      </div>
+      <span class="badge badge-amber">1 Warning</span>
+    </div>
+    <div class="adm-body">
+      <div class="adm-row" style="background:var(--surface2)">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Day</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Date</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Code(s) Billed</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Amount</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Status</span>
+      </div>
+      <div class="adm-row warning">
+        <span class="adm-day">Day 1</span><span class="adm-code">2023-08-02</span>
+        <span><span class="adm-code">5793</span> + <span class="adm-code" style="color:var(--amber)">5794</span> + <span class="adm-code" style="color:var(--amber)">5795</span> — all three billed on admission day</span>
+        <span class="amount">R 3,960</span><span><span class="badge badge-amber">WARNING</span></span>
+      </div>
+      <div class="adm-row">
+        <span class="adm-day">Day 2–3</span><span class="adm-code">2023-08-03–04</span>
+        <span><span class="adm-code">1206</span> — ICU Day 2–14</span>
+        <span class="amount">R 4,480</span><span><span class="badge badge-green">Valid</span></span>
+      </div>
+      <div class="adm-row">
+        <span class="adm-day">Day 4</span><span class="adm-code">2023-08-05</span>
+        <span><span class="adm-code">5795</span> — Discharge planning</span>
+        <span class="amount">R 720</span><span><span class="badge badge-green">Valid</span></span>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="chart-card">
+    <div class="chart-title">Admission Frequency — Monthly Trend</div>
+    <div class="chart-sub">Number of hospital admission episodes billed by PR-0042817 vs peer median</div>
+    <div class="chart-box"><canvas id="admChart"></canvas></div>
+  </div>
+</div>
+ 
+<!-- ══ OUTLIER DETECTION ══ -->
+<div id="panel-outlier" class="panel">
+  <div class="note-box" style="background:var(--red-l);border-color:var(--red-bd);color:var(--red)">
+    🔴 5 statistically significant outliers detected using z-score analysis (threshold: |z| &gt; 2.0) against the 312-provider peer cohort. Each requires investigator review.
+  </div>
+ 
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span class="tbl-title">Outlier Signals — Z-Score Analysis</span>
+      <span class="badge badge-gray">Peer cohort: GP · Gauteng · n=312</span>
+    </div>
+    <div class="outlier-row" style="background:var(--surface2);font-weight:500">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Metric</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Trend (12 months)</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Z-Score</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Percentile</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Status</span>
+    </div>
+    <div class="outlier-row">
+      <div><strong>Code 0190 frequency</strong><div style="font-size:11px;color:var(--muted)">Complex consult billing rate</div></div>
+      <div class="outlier-spark" id="spark1"></div>
+      <div class="sigma-val c-red">+4.21σ</div>
+      <div><span class="badge badge-red">99th</span></div>
+      <div><span class="badge badge-red">Critical</span></div>
+    </div>
+    <div class="outlier-row">
+      <div><strong>ICU codes (1205/1212)</strong><div style="font-size:11px;color:var(--muted)">ICU Day 1 code overuse</div></div>
+      <div class="outlier-spark" id="spark2"></div>
+      <div class="sigma-val c-red">+3.87σ</div>
+      <div><span class="badge badge-red">99th</span></div>
+      <div><span class="badge badge-red">Critical</span></div>
+    </div>
+    <div class="outlier-row">
+      <div><strong>Hospital ward codes (5790)</strong><div style="font-size:11px;color:var(--muted)">Inpatient visit frequency</div></div>
+      <div class="outlier-spark" id="spark3"></div>
+      <div class="sigma-val c-red">+3.41σ</div>
+      <div><span class="badge badge-red">98th</span></div>
+      <div><span class="badge badge-red">Critical</span></div>
+    </div>
+    <div class="outlier-row">
+      <div><strong>Tramadol 50mg units</strong><div style="font-size:11px;color:var(--muted)">Controlled substance volume</div></div>
+      <div class="outlier-spark" id="spark4"></div>
+      <div class="sigma-val c-red">+2.94σ</div>
+      <div><span class="badge badge-red">98th</span></div>
+      <div><span class="badge badge-red">High</span></div>
+    </div>
+    <div class="outlier-row">
+      <div><strong>Claim velocity growth</strong><div style="font-size:11px;color:var(--muted)">Year-on-year claim volume growth</div></div>
+      <div class="outlier-spark" id="spark5"></div>
+      <div class="sigma-val c-amber">+2.18σ</div>
+      <div><span class="badge badge-amber">97th</span></div>
+      <div><span class="badge badge-amber">Elevated</span></div>
+    </div>
+  </div>
+ 
+  <div class="chart-card">
+    <div class="chart-title">Spike Detection — Monthly Claim Amount vs Rolling 3-Month Average</div>
+    <div class="chart-sub">Spikes are defined as months where the amount exceeds the rolling average by more than 1.5 standard deviations. Red markers = confirmed spike.</div>
+    <div class="chart-box"><canvas id="spikeChart"></canvas></div>
+  </div>
+ 
+  <div class="tbl-wrap">
+    <div class="tbl-head"><span class="tbl-title">Spike Events — Identified Months</span></div>
+    <table>
+      <thead><tr><th>Month</th><th class="r">Paid Amount</th><th class="r">Rolling 3-Mo Avg</th><th class="r">Deviation</th><th class="r">Z-Score</th><th>Trigger Code</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">Aug 2023</td><td class="amount">R 248,000</td><td class="amount">R 152,333</td><td class="amount c-red">+63%</td><td class="amount c-red">+2.8σ</td><td><span class="badge badge-red">0190 surge</span></td><td><span class="badge badge-amber">Under Review</span></td></tr>
+        <tr><td class="mono">Dec 2023</td><td class="amount">R 192,000</td><td class="amount">R 173,000</td><td class="amount c-amber">+11%</td><td class="amount c-amber">+1.6σ</td><td><span class="badge badge-amber">5790 spike</span></td><td><span class="badge badge-gray">Monitored</span></td></tr>
+        <tr><td class="mono">Jun 2024</td><td class="amount">R 188,000</td><td class="amount">R 170,667</td><td class="amount c-amber">+10%</td><td class="amount c-amber">+1.5σ</td><td><span class="badge badge-amber">ICU codes</span></td><td><span class="badge badge-gray">Monitored</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+ 
+<!-- ══ RISK SCORE MODEL ══ -->
+<div id="panel-scoring" class="panel">
+  <div class="note-box" style="background:var(--blue-l);border-color:var(--blue-bd);color:var(--blue)">
+    ℹ The risk score is a composite of 6 weighted dimensions, each scored 0–100 within the peer cohort. The composite is a weighted average producing a final score of 0–100. Score ≥ 70 = HIGH RISK · 40–69 = MEDIUM · &lt;40 = LOW.
+  </div>
+ 
+  <div class="score-model-grid">
+    <div class="score-factor">
+      <div class="score-factor-name">1 · Billing Anomaly Score <span style="font-size:12px;color:var(--muted);font-weight:400">(weight: 25%)</span></div>
+      <div class="score-factor-desc">Measures deviation in code frequency, unbundling patterns, and upcoding signals vs the peer cohort using z-score ranking. Combines code-level and claim-level signals.</div>
+      <div class="score-weight-bar"><div class="score-weight-fill f-red" style="width:91%"></div></div>
+      <div class="score-weight-label"><span>Component score</span><span class="c-red">91 / 100</span></div>
+    </div>
+    <div class="score-factor">
+      <div class="score-factor-name">2 · Code Conflict Score <span style="font-size:12px;color:var(--muted);font-weight:400">(weight: 20%)</span></div>
+      <div class="score-factor-desc">Count of billing rule violations (mutually exclusive codes, ICU sequence errors) weighted by financial exposure per violation and frequency of recurrence.</div>
+      <div class="score-weight-bar"><div class="score-weight-fill f-red" style="width:78%"></div></div>
+      <div class="score-weight-label"><span>Component score</span><span class="c-red">78 / 100</span></div>
+    </div>
+    <div class="score-factor">
+      <div class="score-factor-name">3 · Network Exposure Score <span style="font-size:12px;color:var(--muted);font-weight:400">(weight: 20%)</span></div>
+      <div class="score-factor-desc">Percentage of the provider's member base that also utilises No-Pay or Forensic-Blocked providers. Higher shared-member overlap with blocked providers scores higher risk.</div>
+      <div class="score-weight-bar"><div class="score-weight-fill f-red" style="width:88%"></div></div>
+      <div class="score-weight-label"><span>Component score</span><span class="c-red">88 / 100</span></div>
+    </div>
+    <div class="score-factor">
+      <div class="score-factor-name">4 · Claim Velocity Score <span style="font-size:12px;color:var(--muted);font-weight:400">(weight: 15%)</span></div>
+      <div class="score-factor-desc">Year-on-year growth rate and month-on-month spike detection. Sudden unexplained surges in claim volume or value relative to historical baseline and peer trend.</div>
+      <div class="score-weight-bar"><div class="score-weight-fill f-amber" style="width:64%"></div></div>
+      <div class="score-weight-label"><span>Component score</span><span class="c-amber">64 / 100</span></div>
+    </div>
+    <div class="score-factor">
+      <div class="score-factor-name">5 · Member Overlap Score <span style="font-size:12px;color:var(--muted);font-weight:400">(weight: 10%)</span></div>
+      <div class="score-factor-desc">Concentration of high-value members and the degree of cross-provider member sharing. High concentration of claims from few members also signals coaching or collusion.</div>
+      <div class="score-weight-bar"><div class="score-weight-fill f-amber" style="width:55%"></div></div>
+      <div class="score-weight-label"><span>Component score</span><span class="c-amber">55 / 100</span></div>
+    </div>
+    <div class="score-factor">
+      <div class="score-factor-name">6 · Scheme Benefit Targeting <span style="font-size:12px;color:var(--muted);font-weight:400">(weight: 10%)</span></div>
+      <div class="score-factor-desc">Disproportionate claim concentration on schemes with richer benefits for the provider's discipline. Detects opportunistic billing aligned to benefit availability rather than clinical need.</div>
+      <div class="score-weight-bar"><div class="score-weight-fill f-amber" style="width:62%"></div></div>
+      <div class="score-weight-label"><span>Component score</span><span class="c-amber">62 / 100</span></div>
+    </div>
+  </div>
+ 
+  <div class="chart-card">
+    <div class="chart-title">Risk Score History — Rolling 12-Month Score</div>
+    <div class="chart-sub">Score computed monthly. Thresholds: High ≥70 (red), Medium 40–69 (amber), Low &lt;40 (green)</div>
+    <div class="chart-box"><canvas id="scoreHistChart"></canvas></div>
+  </div>
+ 
+  <div class="sec-label">Score Computation — Current Period</div>
+  <div class="score-history">
+    <div class="tbl-head"><span class="tbl-title">Weighted Score Breakdown</span></div>
+    <div class="score-hist-row" style="background:var(--surface2)">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Dimension</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Score</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Trend bar</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">Contribution</span>
+    </div>
+    <div class="score-hist-row"><span>Billing Anomaly (25%)</span><span class="mono c-red">91</span><div class="score-hist-bar"><div class="score-hist-fill f-red" style="width:91%"></div></div><span class="mono">22.75 pts</span></div>
+    <div class="score-hist-row"><span>Code Conflict (20%)</span><span class="mono c-red">78</span><div class="score-hist-bar"><div class="score-hist-fill f-red" style="width:78%"></div></div><span class="mono">15.60 pts</span></div>
+    <div class="score-hist-row"><span>Network Exposure (20%)</span><span class="mono c-red">88</span><div class="score-hist-bar"><div class="score-hist-fill f-red" style="width:88%"></div></div><span class="mono">17.60 pts</span></div>
+    <div class="score-hist-row"><span>Claim Velocity (15%)</span><span class="mono c-amber">64</span><div class="score-hist-bar"><div class="score-hist-fill f-amber" style="width:64%"></div></div><span class="mono">9.60 pts</span></div>
+    <div class="score-hist-row"><span>Member Overlap (10%)</span><span class="mono c-amber">55</span><div class="score-hist-bar"><div class="score-hist-fill f-amber" style="width:55%"></div></div><span class="mono">5.50 pts</span></div>
+    <div class="score-hist-row"><span>Scheme Targeting (10%)</span><span class="mono c-amber">62</span><div class="score-hist-bar"><div class="score-hist-fill f-amber" style="width:62%"></div></div><span class="mono">6.20 pts</span></div>
+    <div class="score-hist-row" style="background:var(--red-l);font-weight:600"><span style="color:var(--red)">COMPOSITE RISK SCORE</span><span class="mono c-red" style="font-size:18px">84</span><div class="score-hist-bar" style="height:12px"><div class="score-hist-fill f-red" style="width:84%"></div></div><span class="mono c-red">84 / 100 · HIGH</span></div>
+  </div>
+</div>
+ 
+<!-- ══ PRINT SUMMARY ══ -->
+<div id="panel-summary" class="panel">
+  <div class="print-btn-row">
+    <button class="print-btn print-btn-primary" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <button class="print-btn print-btn-ghost" onclick="alert('Export to PDF via browser Print → Save as PDF')">📄 Export PDF</button>
+    <button class="print-btn print-btn-ghost" onclick="alert('Email report function')">✉ Email Report</button>
+  </div>
+ 
+  <div class="print-section">
+    <div class="print-header">
+      <div>
+        <div class="print-logo">MedSchm <span>Forensic</span> Intelligence</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">Provider Risk Report — Confidential</div>
+      </div>
+      <div class="print-meta">
+        Report Date: 2024-06-14<br>
+        Generated by: K. Mokoena<br>
+        Practice No: PR-0042817<br>
+        Period: Jan 2022 – Dec 2024<br>
+        Classification: Restricted
+      </div>
+    </div>
+ 
+    <div class="print-score-band">
+      <div class="print-score-num">84</div>
+      <div class="print-score-info">
+        <div class="print-score-title">HIGH RISK — Provider Risk Score</div>
+        <div class="print-score-sub">Dr. S.J. Mthembu · GP · Johannesburg North · PR-0042817 · HPCSA: MP0234891</div>
+        <div class="print-score-sub" style="margin-top:4px">National GP average: <strong>31</strong> &nbsp;·&nbsp; Peer 90th percentile: <strong>62</strong> &nbsp;·&nbsp; This provider: <strong>84 (97th percentile)</strong></div>
+      </div>
+    </div>
+ 
+    <div class="sec-label">Executive summary</div>
+    <p style="font-size:13px;line-height:1.8;color:var(--text);margin-bottom:20px">
+      This report presents the findings of an automated risk analysis of General Practitioner practice number PR-0042817 (Dr. S.J. Mthembu) conducted against a peer cohort of 312 GPs in the Gauteng region. The provider has been assigned a composite risk score of <strong>84/100 (HIGH RISK)</strong> based on statistically significant deviations across billing anomaly, code conflict, and network exposure dimensions. Three active forensic case files exist for this provider. Total financial exposure identified across all case files is <strong>R 218,440</strong>.
+    </p>
+ 
+    <div class="sec-label">Key findings</div>
+    <div>
+      <div class="print-finding"><span class="print-finding-num">01</span><span class="print-finding-text"><strong>Unbundling of consultation codes:</strong> Codes 5790, 5791, and 5792 billed simultaneously on 14 occasions during hospital admissions. These codes are mutually exclusive when a member is admitted. Financial exposure: R 48,320. Active forensic case: FCM-2024-0089.</span></div>
+      <div class="print-finding"><span class="print-finding-num">02</span><span class="print-finding-text"><strong>ICU code sequence violation:</strong> Code 1205 (ICU Day 1) repeated on Day 2 and Day 3 of 3 admission episodes. Per tariff rules, Day 2–14 requires code 1206. Financial exposure: R 39,800.</span></div>
+      <div class="print-finding"><span class="print-finding-num">03</span><span class="print-finding-text"><strong>Mutually exclusive code pairs:</strong> Codes 0132/3 billed with 0190/1/2 across 22 claim events representing duplicate billing for the same service. Financial exposure: R 67,210.</span></div>
+      <div class="print-finding"><span class="print-finding-num">04</span><span class="print-finding-text"><strong>Syndicate risk — 34% member overlap with blocked providers:</strong> 34% of this provider's member base also utilised No-Pay providers; 18% utilised Forensic-Blocked providers. 8 distinct blocked providers identified in the shared member network including two previously convicted practices.</span></div>
+      <div class="print-finding"><span class="print-finding-num">05</span><span class="print-finding-text"><strong>Claim velocity outlier:</strong> Annual claim volume grew 57% between 2022 and 2023 with no corresponding change in the provider's membership panel. Code 0190 billed at 4.21σ above the peer mean — the highest in the cohort.</span></div>
+      <div class="print-finding"><span class="print-finding-num">06</span><span class="print-finding-text"><strong>Controlled substance prescribing:</strong> Tramadol 50mg prescribed at the 98th percentile (2,640 units over 3 years). Codeine 30mg at the 98th percentile. Both flagged for pharmacy benefit manager review.</span></div>
+    </div>
+ 
+    <div style="margin-top:24px" class="sec-label">Recommended actions</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot red"></div><div class="tl-date">Immediate</div><div class="tl-text">Suspend payment of all claims with code conflicts 5790+5791+5792 and 0132/3+0190/1/2 pending investigation. Issue formal written request for clinical records to support all flagged admission episodes.</div></div>
+      <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-date">Within 14 days</div><div class="tl-text">Schedule a desk audit of all ICU admission episodes billed by PR-0042817. Obtain admission and discharge records from the relevant hospitals to confirm member admission dates against billed codes.</div></div>
+      <div class="tl-item"><div class="tl-dot amber"></div><div class="tl-date">Within 30 days</div><div class="tl-text">Refer controlled substance prescribing anomaly (Tramadol, Codeine) to the pharmacy benefit manager and request a dispensing history audit cross-referenced against member treatment histories.</div></div>
+      <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-date">Within 60 days</div><div class="tl-text">Conduct a full syndicate analysis across all 8 blocked providers with shared member overlap. Map transaction flows to determine whether referral patterns are coordinated.</div></div>
+      <div class="tl-item"><div class="tl-dot green"></div><div class="tl-date">Ongoing</div><div class="tl-text">Place provider on enhanced monitoring: daily claim review for rule-conflicting code pairs, monthly risk score recalculation, and mandatory pre-authorisation for all ICU-related codes.</div></div>
+    </div>
+ 
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">MedSchm Forensic Intelligence · CONFIDENTIAL · Not for distribution · Report ID: RPT-2024-0042817-001</div>
+      <div style="font-size:11px;color:var(--muted)">Page 1 of 1</div>
+    </div>
+  </div>
+</div>
+ 
+</div><!-- /wrap -->
+ 
+<script>
+/* ── TAB LOGIC ── */
+function showTab(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('btn-'+id).classList.add('active');
+  if(id==='claims' && !window._claimsDrawn){ drawCharts(); window._claimsDrawn=true; }
+  if(id==='network' && !window._netDrawn){ drawNetChart(); window._netDrawn=true; }
+  if(id==='schemes' && !window._schemeDrawn){ drawSchemeChart(); window._schemeDrawn=true; }
+}
+ 
+function showFcm(id){
+  document.querySelectorAll('.fcm-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.fcm-sub-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('fcm-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+ 
+function selectCase(el){
+  document.querySelectorAll('.fcm-case-item').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+}
+ 
+/* ── TABLE DATA ── */
+const procData=[
+  {rank:1,code:'0190',desc:'Office consultation (complex)',count:612,total:'R 524,280',avg:'R 856',peer:'148',flag:'red'},
+  {rank:2,code:'0132',desc:'Consultation – initial',count:489,total:'R 312,960',avg:'R 640',peer:'201',flag:'red'},
+  {rank:3,code:'5790',desc:'Hospital ward visit – Dr',count:344,total:'R 241,280',avg:'R 701',peer:'89',flag:'red'},
+  {rank:4,code:'1205',desc:'ICU management – Day 1',count:211,total:'R 190,980',avg:'R 905',peer:'22',flag:'red'},
+  {rank:5,code:'0191',desc:'Office consultation (standard)',count:398,total:'R 175,920',avg:'R 442',peer:'312',flag:'none'},
+  {rank:6,code:'5791',desc:'Ward visit – secondary',count:290,total:'R 162,400',avg:'R 560',peer:'61',flag:'amber'},
+  {rank:7,code:'1206',desc:'ICU management – Day 2-14',count:189,total:'R 141,750',avg:'R 750',peer:'19',flag:'none'},
+  {rank:8,code:'5793',desc:'Hospital consultation – specialist',count:178,total:'R 138,840',avg:'R 780',peer:'44',flag:'red'},
+  {rank:9,code:'0133',desc:'Follow-up consultation',count:441,total:'R 132,300',avg:'R 300',peer:'398',flag:'none'},
+  {rank:10,code:'5792',desc:'Ward visit – tertiary',count:198,total:'R 118,800',avg:'R 600',peer:'38',flag:'amber'},
+  {rank:11,code:'1207',desc:'ICU management – subsequent days',count:144,total:'R 108,000',avg:'R 750',peer:'14',flag:'none'},
+  {rank:12,code:'5794',desc:'Hospital consult – follow-up',count:162,total:'R 97,200',avg:'R 600',peer:'41',flag:'amber'},
+  {rank:13,code:'0192',desc:'Telephonic consultation',count:312,total:'R 93,600',avg:'R 300',peer:'289',flag:'none'},
+  {rank:14,code:'5795',desc:'Discharge planning consultation',count:121,total:'R 87,120',avg:'R 720',peer:'28',flag:'amber'},
+  {rank:15,code:'1212',desc:'ICU nursing – Day 1',count:98,total:'R 82,320',avg:'R 840',peer:'12',flag:'red'},
+  {rank:16,code:'1213',desc:'ICU nursing – Day 2-14',count:89,total:'R 71,200',avg:'R 800',peer:'11',flag:'none'},
+  {rank:17,code:'0140',desc:'Minor procedure – in-rooms',count:178,total:'R 62,300',avg:'R 350',peer:'156',flag:'none'},
+  {rank:18,code:'1214',desc:'ICU nursing – subsequent',count:67,total:'R 50,250',avg:'R 750',peer:'8',flag:'none'},
+  {rank:19,code:'0200',desc:'After-hours consultation',count:88,total:'R 44,000',avg:'R 500',peer:'72',flag:'none'},
+  {rank:20,code:'0155',desc:'Repeat prescription',count:214,total:'R 32,100',avg:'R 150',peer:'198',flag:'none'},
+];
+ 
+const memberData=[
+  {rank:1,id:'MBR-00312',name:'T.R. Sithole',scheme:'MedSchm Classic',claims:89,total:'R 76,240',flag:'red'},
+  {rank:2,id:'MBR-00201',name:'P.N. Khumalo',scheme:'MedSchm Classic',claims:74,total:'R 61,800',flag:'red'},
+  {rank:3,id:'MBR-00489',name:'N.D. Mokoena',scheme:'MedSchm Classic',claims:68,total:'R 54,400',flag:'red'},
+  {rank:4,id:'MBR-00401',name:'C.T. van der Berg',scheme:'MedSchm Saver',claims:62,total:'R 49,600',flag:'none'},
+  {rank:5,id:'MBR-00098',name:'L.M. Dlamini',scheme:'MedSchm Classic',claims:58,total:'R 46,400',flag:'none'},
+  {rank:6,id:'MBR-00542',name:'R.A. Mahlangu',scheme:'MedSchm Classic',claims:55,total:'R 44,000',flag:'red'},
+  {rank:7,id:'MBR-00318',name:'G.B. Pretorius',scheme:'MedSchm Saver',claims:51,total:'R 40,800',flag:'none'},
+  {rank:8,id:'MBR-00112',name:'S.F. Ngcobo',scheme:'MedSchm Essential',claims:48,total:'R 38,400',flag:'amber'},
+  {rank:9,id:'MBR-00387',name:'D.J. Botha',scheme:'MedSchm Classic',claims:44,total:'R 35,200',flag:'none'},
+  {rank:10,id:'MBR-00099',name:'F.T. Ndlovu',scheme:'MedSchm Classic',claims:42,total:'R 33,600',flag:'none'},
+  {rank:11,id:'MBR-00221',name:'A.V. Steyn',scheme:'MedSchm Saver',claims:40,total:'R 32,000',flag:'none'},
+  {rank:12,id:'MBR-00334',name:'B.N. Masondo',scheme:'MedSchm Classic',claims:38,total:'R 30,400',flag:'none'},
+  {rank:13,id:'MBR-00456',name:'K.P. Zulu',scheme:'MedSchm Essential',claims:36,total:'R 28,800',flag:'none'},
+  {rank:14,id:'MBR-00178',name:'H.R. du Plessis',scheme:'MedSchm Classic',claims:34,total:'R 27,200',flag:'none'},
+  {rank:15,id:'MBR-00502',name:'O.M. Mbatha',scheme:'MedSchm Saver',claims:32,total:'R 25,600',flag:'none'},
+  {rank:16,id:'MBR-00091',name:'J.T. Cele',scheme:'MedSchm Classic',claims:30,total:'R 24,000',flag:'none'},
+  {rank:17,id:'MBR-00267',name:'M.R. Adams',scheme:'MedSchm Classic',claims:29,total:'R 23,200',flag:'none'},
+  {rank:18,id:'MBR-00413',name:'E.N. Tau',scheme:'MedSchm Essential',claims:27,total:'R 21,600',flag:'none'},
+  {rank:19,id:'MBR-00349',name:'W.F. Kotze',scheme:'MedSchm Saver',claims:25,total:'R 20,000',flag:'none'},
+  {rank:20,id:'MBR-00188',name:'I.S. Bhengu',scheme:'MedSchm Classic',claims:24,total:'R 19,200',flag:'none'},
+];
+ 
+const nappiData=[
+  {rank:1,code:'719823001',name:'Amoxicillin 500mg',form:'Cap 500mg',units:4890,total:'R 73,350',peer:'Top 5%'},
+  {rank:2,code:'744122004',name:'Metformin 850mg',form:'Tab 850mg',units:3210,total:'R 48,150',peer:'Top 10%'},
+  {rank:3,code:'801234008',name:'Ciprofloxacin 500mg',form:'Tab 500mg',units:2890,total:'R 57,800',peer:'Top 5%'},
+  {rank:4,code:'711009002',name:'Tramadol 50mg',form:'Tab 50mg',units:2640,total:'R 39,600',peer:'Top 2%'},
+  {rank:5,code:'788341003',name:'Omeprazole 20mg',form:'Cap 20mg',units:2410,total:'R 24,100',peer:'Top 15%'},
+  {rank:6,code:'803912006',name:'Azithromycin 500mg',form:'Tab 500mg',units:1980,total:'R 59,400',peer:'Top 3%'},
+  {rank:7,code:'712200001',name:'Diclofenac 75mg',form:'Tab SR 75mg',units:1870,total:'R 18,700',peer:'Top 20%'},
+  {rank:8,code:'799001005',name:'Amoxicillin+Clavulanate',form:'Tab 875/125mg',units:1640,total:'R 49,200',peer:'Top 5%'},
+  {rank:9,code:'718204007',name:'Prednisone 5mg',form:'Tab 5mg',units:1520,total:'R 9,120',peer:'Top 25%'},
+  {rank:10,code:'801119003',name:'Codeine Phosphate 30mg',form:'Tab 30mg',units:1380,total:'R 27,600',peer:'Top 2%'},
+];
+ 
+function buildTbody(id, data, rowFn){
+  const tb=document.getElementById(id);
+  if(!tb)return;
+  tb.innerHTML=data.map(rowFn).join('');
+}
+ 
+const flagBadge=(f)=>f==='red'?'<span class="badge badge-red">⚑ Flagged</span>':f==='amber'?'<span class="badge badge-amber">⚠ Watch</span>':'<span class="badge badge-gray">—</span>';
+const memberFlag=(f)=>f==='red'?'<span class="badge badge-red">No-Pay / Forensic link</span>':f==='amber'?'<span class="badge badge-amber">Under Review</span>':'<span class="badge badge-green">Clean</span>';
+ 
+buildTbody('proc-tbody', procData, r=>`<tr><td class="mono">${r.rank}</td><td class="mono">${r.code}</td><td>${r.desc}</td><td>${r.count}</td><td class="amount">${r.total}</td><td class="amount">${r.avg}</td><td class="amount">${r.peer}</td><td>${flagBadge(r.flag)}</td></tr>`);
+buildTbody('members-tbody', memberData, r=>`<tr><td class="mono">${r.rank}</td><td class="mono">${r.id}</td><td>${r.name}</td><td>${r.scheme}</td><td>${r.claims}</td><td class="amount">${r.total}</td><td>${memberFlag(r.flag)}</td></tr>`);
+buildTbody('nappi-tbody', nappiData, r=>`<tr><td class="mono">${r.rank}</td><td class="mono">${r.code}</td><td>${r.name}</td><td class="mono" style="font-size:11px">${r.form}</td><td>${r.units.toLocaleString()}</td><td class="amount">${r.total}</td><td><span class="badge badge-amber">${r.peer}</span></td></tr>`);
+ 
+/* ── CHARTS ── */
+const months=['Jan 22','Feb 22','Mar 22','Apr 22','May 22','Jun 22','Jul 22','Aug 22','Sep 22','Oct 22','Nov 22','Dec 22','Jan 23','Feb 23','Mar 23','Apr 23','May 23','Jun 23','Jul 23','Aug 23','Sep 23','Oct 23','Nov 23','Dec 23','Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24'];
+const providerAmts=[68000,72000,75000,80000,78000,82000,85000,90000,88000,94000,98000,118000,95000,102000,110000,124000,138000,151000,168000,248000,188000,172000,159000,192000,145000,138000,151000,162000,175000,188000,158000,143000,137000,148000,131000,120000];
+const peerLow=[42000,43000,44000,44500,43000,44000,45000,46000,45000,47000,48000,51000,46000,47000,48000,49000,51000,52000,53000,54000,55000,54000,55000,56000,54000,55000,56000,57000,58000,59000,58000,57000,56000,57000,55000,54000];
+const peerHigh=[88000,89000,91000,92000,90000,92000,94000,96000,94000,97000,99000,105000,95000,97000,99000,101000,104000,107000,110000,112000,113000,112000,114000,116000,112000,114000,116000,118000,120000,122000,120000,118000,116000,118000,115000,112000];
+ 
+function drawCharts(){
+  const ctx=document.getElementById('claimsChart');
+  if(!ctx)return;
+  new Chart(ctx,{type:'line',data:{labels:months,datasets:[
+    {label:'Peer Band (90th)',data:peerHigh,fill:'+1',borderColor:'transparent',backgroundColor:'rgba(180,174,162,0.15)',pointRadius:0,tension:.3},
+    {label:'Peer Band (10th)',data:peerLow,fill:false,borderColor:'rgba(180,174,162,0.4)',borderWidth:1,pointRadius:0,tension:.3,borderDash:[4,3]},
+    {label:'PR-0042817 Paid',data:providerAmts,borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.08)',fill:true,borderWidth:2,pointRadius:3,pointBackgroundColor:'#c0392b',tension:.3},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{family:'DM Sans',size:11},boxWidth:12,padding:16}}},scales:{x:{ticks:{font:{family:'IBM Plex Mono',size:9},maxRotation:45,color:'#7a7570'},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{font:{family:'IBM Plex Mono',size:9},color:'#7a7570',callback:v=>'R'+Math.round(v/1000)+'K'},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+}
+ 
+function drawNetChart(){
+  const ctx=document.getElementById('networkChart');
+  if(!ctx)return;
+  new Chart(ctx,{type:'doughnut',data:{labels:['Clean (single provider)','Use other in-network providers','Used No-Pay provider','Used Forensic-Blocked provider'],datasets:[{data:[42,24,34,18],backgroundColor:['#1a6b3c','#1a4a7a','#b8660a','#c0392b'],borderWidth:2,borderColor:'#ffffff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{family:'DM Sans',size:11},padding:16,boxWidth:14}}}}});
+}
+ 
+function drawSchemeChart(){
+  const ctx=document.getElementById('schemeChart');
+  if(!ctx)return;
+  const mo12=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  new Chart(ctx,{type:'bar',data:{labels:mo12,datasets:[
+    {label:'MedSchm Classic',data:[182,198,210,224,231,268,242,219,208,241,228,296],backgroundColor:'rgba(192,57,43,0.75)',borderRadius:4},
+    {label:'MedSchm Saver',data:[62,58,71,68,74,81,76,69,72,78,68,88],backgroundColor:'rgba(184,102,10,0.65)',borderRadius:4},
+    {label:'MedSchm Essential',data:[28,31,29,34,36,42,38,33,30,36,32,41],backgroundColor:'rgba(26,74,122,0.55)',borderRadius:4},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'DM Sans',size:11},boxWidth:12}}},scales:{x:{stacked:true,ticks:{font:{family:'IBM Plex Mono',size:10},color:'#7a7570'}},y:{stacked:true,ticks:{font:{family:'IBM Plex Mono',size:10},color:'#7a7570',callback:v=>'R'+v+'K'}}}}});
+}
+ 
+// Draw claims chart on load (first active tab)
+window.addEventListener('DOMContentLoaded', ()=>{ drawCharts(); window._claimsDrawn=true; });
+</script>
+</body>
+</html>
